@@ -8,6 +8,13 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/tabler-icons.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
+  @media (max-width: 768px) {
+    .sidebar { position: fixed; right: -260px; transition: 0.3s; z-index: 9999; height: 100vh !important; }
+    .sidebar.active { right: 0; }
+    .main-content { margin-right: 0 !important; width: 100% !important; padding: 10px !important; }
+    .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 9998; }
+    .sidebar-overlay.active { display: block; }
+}
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
   --bg:#0f172a;--surface:#0d1829;--card:#1e293b;--card2:#162032;
