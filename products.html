@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartPrint - المنتجات</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root { --bg:#0f172a; --surface:#1e293b; --text:#f1f5f9; --blue:#3b82f6; }
+        body { background: var(--bg); color: var(--text); font-family: sans-serif; margin: 0; padding: 20px; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+        .card { background: var(--surface); padding: 20px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.1); }
+        .status { padding: 5px 10px; border-radius: 20px; font-size: 12px; }
+        .low { background: #ef4444; }
+        .ok { background: #10b981; }
+        .back-btn { color: var(--text); text-decoration: none; background: var(--blue); padding: 10px 20px; border-radius: 10px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>إدارة المنتجات والمخزن</h1>
+        <a href="01-dashboard.html" class="back-btn">العودة للرئيسية</a>
+    </div>
+    <div class="grid">
+        <div class="card">
+            <h3>حبر Canon C5535 - أسود</h3>
+            <p>الكمية المتوفرة: 5 قطع</p>
+            <span class="status ok">مكتمل</span>
+        </div>
+        <div class="card">
+            <h3>حبر HP Pro 400 - أزرق</h3>
+            <p>الكمية المتوفرة: 1 قطعة</p>
+            <span class="status low">مخزون منخفض!</span>
+        </div>
+        <div class="card">
+            <h3>ورق A4 - 80g</h3>
+            <p>الكمية المتوفرة: 40 رزمة</p>
+            <span class="status ok">مكتمل</span>
+        </div>
+    </div>
+</body>
+</html>
