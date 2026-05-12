@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PrintWatch — تنبيهات واتساب</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0f172a;--surface:#0d1829;--card:#1e293b;
+  --border:rgba(255,255,255,.07);--border2:rgba(255,255,255,.12);
+  --blue:#3b82f6;--green:#10b981;--yellow:#f59e0b;--red:#ef4444;--purple:#8b5cf6;
+  --wa:#25d366;--wa-dark:#128c7e;--wa-bg:#0d1f1a;
+  --text:#f1f5f9;--text2:#94a3b8;--text3:#475569;
+  --sans:'IBM Plex Sans Arabic',sans-serif;--mono:'JetBrains Mono',monospace;
+}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;min-height:100vh;display:flex}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(59,130,246,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(59,130,246,.025) 1px,transparent 1px);background-size:48px 48px;pointer-events:none;z-index:0}
+
+.sidebar{width:220px;min-height:100vh;background:#0a1220;border-left:1px solid var(--border);display:flex;flex-direction:column;position:relative;z-index:1;flex-shrink:0}
+.logo{padding:20px 18px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.logo-icon{width:34px;height:34px;background:var(--blue);border-radius:9px;display:flex;align-items:center;justify-content:center}
+.logo-icon i{color:#fff;font-size:18px}
+.logo-text{font-size:15px;font-weight:600}
+.logo-ver{font-size:10px;color:var(--text3);font-family:var(--mono);margin-top:1px}
+.nav{padding:10px 0;flex:1}
+.nav-sec{padding:10px 18px 5px;font-size:10px;color:var(--text3);letter-spacing:.07em;text-transform:uppercase}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 18px;font-size:13px;color:var(--text2);cursor:pointer;transition:all .15s;text-decoration:none;border-right:2px solid transparent}
+.nav-item:hover{background:rgba(255,255,255,.04);color:var(--text)}
+.nav-item.active{background:rgba(37,211,102,.08);color:var(--wa);border-right-color:var(--wa)}
+.nav-item i{font-size:17px;width:20px}
+.nav-badge{margin-right:auto;background:var(--red);color:#fff;font-size:10px;padding:1px 6px;border-radius:10px}
+.plan-box{margin:12px;background:linear-gradient(135deg,rgba(59,130,246,.2),rgba(139,92,246,.2));border:1px solid rgba(59,130,246,.2);border-radius:10px;padding:12px}
+.plan-name{font-size:12px;font-weight:600;margin-bottom:2px}
+.plan-info{font-size:11px;color:#93c5fd}
+
+.main{flex:1;padding:20px 24px;position:relative;z-index:1;min-width:0;overflow-y:auto}
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.page-title{font-size:18px;font-weight:600;display:flex;align-items:center;gap:8px}
+.wa-icon{width:30px;height:30px;background:var(--wa);border-radius:8px;display:flex;align-items:center;justify-content:center}
+.page-sub{font-size:12px;color:var(--text3);margin-top:2px;font-family:var(--mono)}
+.topbar-right{display:flex;align-items:center;gap:8px}
+.btn{padding:7px 14px;border-radius:8px;font-size:12px;border:1px solid var(--border2);background:rgba(255,255,255,.05);color:var(--text2);cursor:pointer;display:inline-flex;align-items:center;gap:5px;font-family:var(--sans);transition:all .15s}
+.btn:hover{background:rgba(255,255,255,.09);color:var(--text)}
+.btn-wa{background:var(--wa);border-color:var(--wa);color:#fff}
+.btn-wa:hover{background:#1da851;color:#fff}
+.avatar{width:34px;height:34px;border-radius:50%;background:#1e3a8a;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:#93c5fd}
+
+/* CONN BAR */
+.conn-bar{background:rgba(37,211,102,.07);border:1px solid rgba(37,211,102,.2);border-radius:10px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between}
+.conn-dot{width:8px;height:8px;border-radius:50%;background:var(--wa);animation:pulse 2s infinite;flex-shrink:0}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.conn-text{font-size:13px;color:var(--wa);font-weight:500}
+.conn-sub{font-size:11px;color:var(--text3);margin-top:1px}
+
+/* METRICS */
+.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
+.metric{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 16px}
+.metric-label{font-size:11px;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px}
+.metric-val{font-size:22px;font-weight:600;font-family:var(--mono);line-height:1}
+.metric-sub{font-size:11px;color:var(--text3);margin-top:4px}
+
+/* GRID */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.grid-col{display:flex;flex-direction:column;gap:14px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px}
+.ch{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.ct{font-size:13px;font-weight:500;color:var(--text)}
+.cb{padding:14px 16px}
+
+/* RULES */
+.rule-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)}
+.rule-row:last-child{border-bottom:none}
+.rule-icon{width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.rule-name{font-size:12px;font-weight:500;color:var(--text)}
+.rule-desc{font-size:11px;color:var(--text3);margin-top:1px}
+.rule-badge{font-size:10px;padding:2px 7px;border-radius:10px;flex-shrink:0;margin-right:auto}
+.rb-err{background:rgba(239,68,68,.1);color:var(--red)}
+.rb-warn{background:rgba(245,158,11,.1);color:var(--yellow)}
+.rb-info{background:rgba(59,130,246,.1);color:#60a5fa}
+.rb-ok{background:rgba(16,185,129,.1);color:var(--green)}
+/* TOGGLE */
+.toggle{width:38px;height:21px;border-radius:12px;position:relative;cursor:pointer;flex-shrink:0;transition:background .2s}
+.toggle.on{background:var(--wa)}
+.toggle.off{background:#334155}
+.toggle-knob{width:17px;height:17px;border-radius:50%;background:#fff;position:absolute;top:2px;transition:left .2s}
+.toggle.on .toggle-knob{left:19px}
+.toggle.off .toggle-knob{left:2px}
+
+/* CONTACTS */
+.contact-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+.contact-row:last-child{border-bottom:none}
+.contact-av{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0}
+.contact-name{font-size:12px;font-weight:500;color:var(--text)}
+.contact-role{font-size:11px;color:var(--text3)}
+.contact-num{font-size:11px;color:var(--text3);margin-right:auto;direction:ltr;font-family:var(--mono)}
+
+/* TEMPLATES */
+.tmpl{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:8px}
+.tmpl:last-child{margin-bottom:0}
+.tmpl-name{font-size:10px;color:var(--text3);font-family:var(--mono);margin-bottom:5px;text-transform:uppercase;letter-spacing:.04em}
+.tmpl-body{font-size:12px;color:var(--text2);line-height:1.5}
+.tmpl-vars{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px}
+.tmpl-var{font-size:10px;background:rgba(59,130,246,.1);color:#60a5fa;padding:2px 6px;border-radius:4px;font-family:var(--mono)}
+
+/* WHATSAPP CHAT */
+.wa-phone{background:var(--wa-bg);border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,.07)}
+.wa-header{background:#1f2c34;padding:10px 14px;display:flex;align-items:center;gap:10px}
+.wa-av{width:32px;height:32px;border-radius:50%;background:var(--wa-dark);display:flex;align-items:center;justify-content:center}
+.wa-name{font-size:13px;color:#e9edef;font-weight:500}
+.wa-status{font-size:11px;color:var(--wa)}
+.wa-body{padding:12px;display:flex;flex-direction:column;gap:8px;max-height:280px;overflow-y:auto}
+.wa-msg{max-width:88%;border-radius:0 8px 8px 8px;padding:9px 11px;background:#1f2c34}
+.wa-msg.sent{border-radius:8px 0 8px 8px;background:#005c4b;align-self:flex-end}
+.wa-msg-type{font-size:10px;font-weight:500;margin-bottom:4px;display:flex;align-items:center;gap:4px}
+.wa-msg-text{font-size:12px;color:#e9edef;line-height:1.5}
+.wa-msg-time{font-size:10px;color:#8696a0;text-align:left;margin-top:4px}
+.wa-divider{text-align:center;margin:4px 0}
+.wa-divider span{font-size:10px;color:#8696a0;background:#1a2b32;padding:2px 8px;border-radius:10px}
+.wa-sim-btn{width:100%;background:var(--wa);border:none;border-radius:0 0 12px 12px;padding:10px;font-size:13px;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;font-family:var(--sans);font-weight:500;transition:background .15s}
+.wa-sim-btn:hover{background:#1da851}
+
+/* LOG */
+.log-row{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px}
+.log-row:last-child{border-bottom:none}
+.log-time{color:var(--text3);width:68px;flex-shrink:0;font-family:var(--mono);font-size:11px}
+.log-msg{flex:1;color:var(--text);line-height:1.4}
+.log-to{font-size:10px;color:var(--text3);margin-top:1px}
+.s-ok{font-size:10px;color:var(--wa);flex-shrink:0}
+.s-fail{font-size:10px;color:var(--red);flex-shrink:0}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(60px);background:var(--card);border:1px solid var(--border2);color:var(--text);padding:10px 18px;border-radius:10px;font-size:13px;z-index:999;transition:transform .3s;pointer-events:none}
+.toast.show{transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+  <div class="logo">
+    <div class="logo-icon"><i class="ti ti-printer"></i></div>
+    <div><div class="logo-text">PrintWatch</div><div class="logo-ver">v1.0 · MVP</div></div>
+  </div>
+  <div class="nav">
+    <div class="nav-sec">رئيسي</div>
+    <a class="nav-item" href="01-dashboard.html"><i class="ti ti-layout-dashboard"></i> Dashboard</a>
+    <a class="nav-item" href="01-dashboard.html"><i class="ti ti-printer"></i> الطابعات</a>
+    <a class="nav-item" href="01-dashboard.html"><i class="ti ti-activity"></i> مراقبة مباشرة</a>
+    <div class="nav-sec">إدارة</div>
+    <a class="nav-item" href="01-dashboard.html"><i class="ti ti-bell"></i> التنبيهات <span class="nav-badge">3</span></a>
+    <a class="nav-item" href="02-ink-management.html"><i class="ti ti-droplet"></i> إدارة الحبر</a>
+    <a class="nav-item" href="01-dashboard.html"><i class="ti ti-chart-bar"></i> التقارير</a>
+    <a class="nav-item" href="01-dashboard.html"><i class="ti ti-users"></i> العملاء</a>
+    <a class="nav-item" href="01-dashboard.html"><i class="ti ti-brain"></i> تحليل AI</a>
+    <div class="nav-sec">النظام</div>
+    <a class="nav-item active" href="03-whatsapp-alerts.html"><i class="ti ti-brand-whatsapp"></i> تنبيهات واتساب</a>
+    <a class="nav-item" href="01-dashboard.html"><i class="ti ti-credit-card"></i> الاشتراكات</a>
+    <a class="nav-item" href="01-dashboard.html"><i class="ti ti-settings"></i> الإعدادات</a>
+  </div>
+  <div class="plan-box">
+    <div class="plan-name">خطة Pro</div>
+    <div class="plan-info">12 طابعة · تنتهي 30 يونيو</div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div>
+      <div class="page-title">
+        <div class="wa-icon"><i class="ti ti-brand-whatsapp" style="color:#fff;font-size:16px"></i></div>
+        تنبيهات واتساب
+      </div>
+      <div class="page-sub">إرسال تنبيهات فورية عند الأعطال ونفاد المستلزمات</div>
+    </div>
+    <div class="topbar-right">
+      <button class="btn btn-wa" onclick="testSend()"><i class="ti ti-send"></i> اختبار الإرسال</button>
+      <div class="avatar">م.أ</div>
+    </div>
+  </div>
+
+  <div class="conn-bar">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div class="conn-dot"></div>
+      <div>
+        <div class="conn-text"><i class="ti ti-check" style="font-size:13px"></i> واتساب Business متصل</div>
+        <div class="conn-sub">رقم الإرسال: +966 50 XXX XXXX · آخر رسالة: منذ 14 دقيقة</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:20px">
+      <div style="text-align:center"><div style="font-size:17px;font-weight:600;color:var(--wa);font-family:var(--mono)">98.4%</div><div style="font-size:10px;color:var(--text3)">معدل التسليم</div></div>
+      <button class="btn" style="font-size:11px"><i class="ti ti-settings" style="font-size:13px"></i> إعدادات الاتصال</button>
+    </div>
+  </div>
+
+  <div class="metrics">
+    <div class="metric">
+      <div class="metric-label">رسائل أُرسلت اليوم</div>
+      <div class="metric-val" id="sent-count">23</div>
+      <div class="metric-sub" style="color:var(--wa)">21 وصلت · 2 قيد الإرسال</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">جهات الإشعار</div>
+      <div class="metric-val">7</div>
+      <div class="metric-sub">4 تقنيين · 3 عملاء</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">تنبيهات الشهر</div>
+      <div class="metric-val">142</div>
+      <div class="metric-sub" style="color:var(--green)">وفّرت ~18 ساعة تأخير</div>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <!-- RULES + CONTACTS -->
+    <div class="grid-col">
+      <div class="card">
+        <div class="ch">
+          <span class="ct">قواعد الإشعارات</span>
+          <button class="btn" style="font-size:11px" onclick="addRule()"><i class="ti ti-plus" style="font-size:13px"></i> قاعدة جديدة</button>
+        </div>
+        <div class="cb" id="rulesList"></div>
+      </div>
+      <div class="card">
+        <div class="ch">
+          <span class="ct">جهات الإشعار</span>
+          <button class="btn" style="font-size:11px" onclick="addContact()"><i class="ti ti-plus" style="font-size:13px"></i> إضافة</button>
+        </div>
+        <div class="cb" id="contactsList"></div>
+      </div>
+    </div>
+
+    <!-- CHAT + LOG + TEMPLATES -->
+    <div class="grid-col">
+      <div class="card" style="overflow:hidden">
+        <div class="ch"><span class="ct">محاكاة واتساب</span><span style="font-size:11px;color:var(--wa)"><i class="ti ti-circle-check" style="font-size:13px;vertical-align:-2px"></i> مباشر</span></div>
+        <div class="wa-phone" style="margin:0;border-radius:0;border:none">
+          <div class="wa-header">
+            <div class="wa-av"><i class="ti ti-printer" style="color:#fff;font-size:14px"></i></div>
+            <div><div class="wa-name">PrintWatch Bot</div><div class="wa-status">متصل</div></div>
+          </div>
+          <div class="wa-body" id="chatArea">
+            <div class="wa-divider"><span>اليوم</span></div>
+            <div class="wa-msg">
+              <div class="wa-msg-type" style="color:var(--red)"><i class="ti ti-alert-circle" style="font-size:11px"></i> تنبيه عطل</div>
+              <div class="wa-msg-text">تنبيه PrintWatch: طابعة Ricoh MP C3504 في الطابق الثاني توقفت. الخطأ: E-07 انحشار ورق.</div>
+              <div class="wa-msg-time">09:14 ✓✓</div>
+            </div>
+            <div class="wa-msg">
+              <div class="wa-msg-type" style="color:#60a5fa"><i class="ti ti-droplet" style="font-size:11px"></i> تنبيه حبر</div>
+              <div class="wa-msg-text">تذكير: حبر الأسود في HP LaserJet وصل إلى 18%. يُقدَّر النفاد خلال 3 أيام.</div>
+              <div class="wa-msg-time">09:31 ✓✓</div>
+            </div>
+            <div class="wa-msg sent">
+              <div class="wa-msg-text">تم الاستلام، سيتوجه الفني الآن ✔</div>
+              <div class="wa-msg-time" style="color:#acf2b9">09:35 ✓✓</div>
+            </div>
+          </div>
+          <button class="wa-sim-btn" onclick="simulateMsg()">
+            <i class="ti ti-player-play" style="font-size:13px"></i> محاكاة تنبيه جديد
+          </button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="ch"><span class="ct">قوالب الرسائل</span></div>
+        <div class="cb">
+          <div class="tmpl">
+            <div class="tmpl-name">قالب — عطل فوري</div>
+            <div class="tmpl-body">تنبيه PrintWatch: طابعة {{اسم_الطابعة}} في {{الموقع}} توقفت. الخطأ: {{كود_الخطأ}}. الرجاء المتابعة فوراً.</div>
+            <div class="tmpl-vars"><span class="tmpl-var">{{اسم_الطابعة}}</span><span class="tmpl-var">{{الموقع}}</span><span class="tmpl-var">{{كود_الخطأ}}</span></div>
+          </div>
+          <div class="tmpl">
+            <div class="tmpl-name">قالب — حبر منخفض</div>
+            <div class="tmpl-body">تذكير: حبر {{لون_الحبر}} في {{اسم_الطابعة}} وصل إلى {{النسبة}}%. يُقدَّر النفاد خلال {{الأيام}} أيام.</div>
+            <div class="tmpl-vars"><span class="tmpl-var">{{لون_الحبر}}</span><span class="tmpl-var">{{النسبة}}</span><span class="tmpl-var">{{الأيام}}</span></div>
+          </div>
+          <div class="tmpl">
+            <div class="tmpl-name">قالب — صيانة مجدولة</div>
+            <div class="tmpl-body">تذكير: موعد صيانة {{اسم_الطابعة}} بعد 3 أيام ({{التاريخ}}). يرجى التنسيق مع الفني.</div>
+            <div class="tmpl-vars"><span class="tmpl-var">{{اسم_الطابعة}}</span><span class="tmpl-var">{{التاريخ}}</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOG TABLE -->
+  <div class="card">
+    <div class="ch"><span class="ct">سجل الرسائل المُرسلة</span><span style="font-size:11px;color:var(--text3)">آخر 24 ساعة</span></div>
+    <div class="cb" id="logArea"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const rules=[
+  {icon:'ti-alert-circle',ibg:'rgba(239,68,68,.1)',ic:'var(--red)',name:'عطل فوري',desc:'إرسال فوري عند توقف الطابعة',badge:'rb-err',bt:'طارئ',on:true},
+  {icon:'ti-droplet',ibg:'rgba(59,130,246,.1)',ic:'#60a5fa',name:'حبر أقل من 20%',desc:'تنبيه مبكر قبل النفاد',badge:'rb-warn',bt:'تحذير',on:true},
+  {icon:'ti-wifi-off',ibg:'rgba(245,158,11,.1)',ic:'var(--yellow)',name:'انقطاع الاتصال',desc:'إذا انقطع الاتصال أكثر من 10 دقائق',badge:'rb-warn',bt:'تحذير',on:true},
+  {icon:'ti-calendar',ibg:'rgba(16,185,129,.1)',ic:'var(--green)',name:'تذكير الصيانة',desc:'قبل موعد الصيانة بـ 3 أيام',badge:'rb-info',bt:'تنبيه',on:false},
+  {icon:'ti-file-report',ibg:'rgba(139,92,246,.1)',ic:'#a78bfa',name:'تقرير يومي',desc:'ملخص يومي الساعة 8 صباحاً',badge:'rb-ok',bt:'يومي',on:true},
+];
+
+const contacts=[
+  {name:'أحمد الزهراني',role:'مدير الصيانة',num:'+966 50 123 4567',bg:'#1e3a5f',tc:'#60a5fa',init:'أز'},
+  {name:'محمد العمري',role:'فني أول',num:'+966 55 987 6543',bg:'#1e3b2e',tc:'#4ade80',init:'مع'},
+  {name:'شركة الورق الذهبي',role:'عميل',num:'+966 56 111 2222',bg:'#2d1b1b',tc:'#f87171',init:'شو'},
+  {name:'مكتب النور',role:'عميل',num:'+966 54 333 4444',bg:'#2d2612',tc:'#facc15',init:'من'},
+];
+
+const logs=[
+  {time:'09:31',msg:'HP LaserJet — حبر أسود 18%',to:'أحمد الزهراني',ok:true},
+  {time:'09:14',msg:'Ricoh C3504 — عطل E-07',to:'محمد العمري',ok:true},
+  {time:'08:00',msg:'تقرير يومي — 12 طابعة',to:'الجميع',ok:true},
+  {time:'أمس 17:22',msg:'Brother MFC — انقطاع اتصال',to:'أحمد الزهراني',ok:true},
+  {time:'أمس 14:05',msg:'Canon iR — حبر سماوي 15%',to:'أحمد الزهراني',ok:false},
+];
+
+const simMsgs=[
+  {type:'ti-alert-circle',tc:'var(--red)',tl:'عطل فوري',text:'تنبيه PrintWatch: طابعة Canon iR-ADV C5535 في المكتب A توقفت. الخطأ: SC-551 عطل في وحدة الدمج.'},
+  {type:'ti-droplet',tc:'var(--yellow)',tl:'حبر منخفض',text:'تذكير: حبر الأصفر في Epson WorkForce وصل إلى 12%. يُقدَّر النفاد خلال يومين.'},
+  {type:'ti-wifi-off',tc:'#60a5fa',tl:'انقطاع اتصال',text:'تنبيه: طابعة Brother MFC-L8900CDW في قسم المبيعات انقطع اتصالها منذ 12 دقيقة.'},
+];
+let simIdx=0;
+
+function renderRules(){
+  let h='';
+  rules.forEach((r,i)=>{
+    h+=`<div class="rule-row">
+      <div class="rule-icon" style="background:${r.ibg}"><i class="ti ${r.icon}" style="color:${r.ic};font-size:15px"></i></div>
+      <div style="flex:1"><div class="rule-name">${r.name}</div><div class="rule-desc">${r.desc}</div></div>
+      <span class="rule-badge ${r.badge}">${r.bt}</span>
+      <div class="toggle ${r.on?'on':'off'}" onclick="toggleRule(${i})"><div class="toggle-knob"></div></div>
+    </div>`;
+  });
+  document.getElementById('rulesList').innerHTML=h;
+}
+
+function toggleRule(i){
+  rules[i].on=!rules[i].on;
+  renderRules();
+  showToast(rules[i].on?`✅ تم تفعيل: ${rules[i].name}`:`⏸ تم إيقاف: ${rules[i].name}`);
+}
+
+function renderContacts(){
+  let h='';
+  contacts.forEach(c=>{
+    h+=`<div class="contact-row">
+      <div class="contact-av" style="background:${c.bg};color:${c.tc}">${c.init}</div>
+      <div style="flex:1"><div class="contact-name">${c.name}</div><div class="contact-role">${c.role}</div></div>
+      <div class="contact-num">${c.num}</div>
+    </div>`;
+  });
+  document.getElementById('contactsList').innerHTML=h;
+}
+
+function renderLog(){
+  let h='';
+  logs.forEach(l=>{
+    h+=`<div class="log-row">
+      <span class="log-time">${l.time}</span>
+      <div style="flex:1"><div class="log-msg">${l.msg}</div><div class="log-to">إلى: ${l.to}</div></div>
+      <span class="${l.ok?'s-ok':'s-fail'}">${l.ok?'✓✓ وصلت':'✗ فشل'}</span>
+    </div>`;
+  });
+  document.getElementById('logArea').innerHTML=h;
+}
+
+function simulateMsg(){
+  const m=simMsgs[simIdx%simMsgs.length];simIdx++;
+  const now=new Date();
+  const t=now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
+  const el=document.createElement('div');
+  el.className='wa-msg';
+  el.style.opacity='0';el.style.transition='opacity .3s';
+  el.innerHTML=`<div class="wa-msg-type" style="color:${m.tc}"><i class="ti ${m.type}" style="font-size:11px"></i>${m.tl}</div><div class="wa-msg-text">${m.text}</div><div class="wa-msg-time">${t} ✓</div>`;
+  const area=document.getElementById('chatArea');
+  area.appendChild(el);
+  area.scrollTop=area.scrollHeight;
+  setTimeout(()=>el.style.opacity='1',50);
+  logs.unshift({time:t,msg:m.tl+' — تنبيه جديد',to:'أحمد الزهراني',ok:true});
+  renderLog();
+  document.getElementById('sent-count').textContent=parseInt(document.getElementById('sent-count').textContent)+1;
+}
+
+function testSend(){
+  const btn=document.querySelector('.btn-wa');
+  const orig=btn.innerHTML;
+  btn.innerHTML='<i class="ti ti-loader" style="font-size:13px"></i> جارٍ الإرسال...';
+  btn.style.opacity='.7';
+  setTimeout(()=>{
+    btn.innerHTML='<i class="ti ti-check" style="font-size:13px"></i> تم الإرسال ✓';
+    showToast('✅ تم إرسال رسالة اختبار بنجاح');
+    setTimeout(()=>{btn.innerHTML=orig;btn.style.opacity='1';},2000);
+  },1400);
+}
+
+function addContact(){
+  const name=prompt('اسم جهة الاتصال:');if(!name)return;
+  const num=prompt('رقم واتساب:');if(!num)return;
+  contacts.push({name,role:'جهة اتصال',num,bg:'#1e293b',tc:'#94a3b8',init:name.charAt(0)});
+  renderContacts();
+  showToast(`✅ تمت إضافة ${name}`);
+}
+
+function addRule(){
+  showToast('💡 يمكنك إضافة قواعد مخصصة من لوحة الإعدادات');
+}
+
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+renderRules();renderContacts();renderLog();
+</script>
+</body>
+</html>

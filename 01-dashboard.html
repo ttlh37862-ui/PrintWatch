@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PrintWatch — Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/tabler-icons.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0f172a;--surface:#0d1829;--card:#1e293b;--card2:#162032;
+  --border:rgba(255,255,255,.07);--border2:rgba(255,255,255,.12);
+  --blue:#3b82f6;--cyan:#06b6d4;--green:#10b981;--yellow:#f59e0b;--red:#ef4444;--purple:#8b5cf6;
+  --text:#f1f5f9;--text2:#94a3b8;--text3:#475569;
+  --sans:'IBM Plex Sans Arabic',sans-serif;--mono:'JetBrains Mono',monospace;
+}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;min-height:100vh;display:flex}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(59,130,246,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(59,130,246,.025) 1px,transparent 1px);background-size:48px 48px;pointer-events:none;z-index:0}
+
+/* SIDEBAR */
+.sidebar{width:220px;min-height:100vh;background:#0a1220;border-left:1px solid var(--border);display:flex;flex-direction:column;position:relative;z-index:1;flex-shrink:0}
+.logo{padding:20px 18px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.logo-icon{width:34px;height:34px;background:var(--blue);border-radius:9px;display:flex;align-items:center;justify-content:center}
+.logo-icon i{color:#fff;font-size:18px}
+.logo-text{font-size:15px;font-weight:600;color:var(--text)}
+.logo-ver{font-size:10px;color:var(--text3);font-family:var(--mono);margin-top:1px}
+.nav{padding:10px 0;flex:1}
+.nav-sec{padding:10px 18px 5px;font-size:10px;color:var(--text3);letter-spacing:.07em;text-transform:uppercase}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 18px;font-size:13px;color:var(--text2);cursor:pointer;transition:all .15s;text-decoration:none;border-right:2px solid transparent}
+.nav-item:hover{background:rgba(255,255,255,.04);color:var(--text)}
+.nav-item.active{background:rgba(59,130,246,.1);color:#60a5fa;border-right-color:var(--blue)}
+.nav-item i{font-size:17px;width:20px}
+.nav-badge{margin-right:auto;background:var(--red);color:#fff;font-size:10px;padding:1px 6px;border-radius:10px;font-family:var(--mono)}
+.plan-box{margin:12px;background:linear-gradient(135deg,rgba(59,130,246,.2),rgba(139,92,246,.2));border:1px solid rgba(59,130,246,.2);border-radius:10px;padding:12px}
+.plan-name{font-size:12px;font-weight:600;color:var(--text);margin-bottom:2px}
+.plan-info{font-size:11px;color:#93c5fd}
+
+/* MAIN */
+.main{flex:1;padding:20px 24px;position:relative;z-index:1;min-width:0}
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.page-title{font-size:18px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:8px}
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 1.8s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
+.page-sub{font-size:12px;color:var(--text3);margin-top:2px;font-family:var(--mono)}
+.topbar-right{display:flex;align-items:center;gap:8px}
+.btn{padding:7px 14px;border-radius:8px;font-size:12px;border:1px solid var(--border2);background:rgba(255,255,255,.05);color:var(--text2);cursor:pointer;display:inline-flex;align-items:center;gap:5px;font-family:var(--sans);transition:all .15s}
+.btn:hover{background:rgba(255,255,255,.09);color:var(--text)}
+.btn-blue{background:var(--blue);border-color:var(--blue);color:#fff}
+.btn-blue:hover{background:#2563eb;color:#fff}
+.avatar{width:34px;height:34px;border-radius:50%;background:#1e3a8a;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:#93c5fd}
+
+/* METRICS */
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
+.metric{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px}
+.metric-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.metric-label{font-size:11px;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.04em}
+.metric-icon{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px}
+.metric-val{font-size:26px;font-weight:600;line-height:1;font-family:var(--mono)}
+.metric-change{font-size:11px;color:var(--text3);margin-top:5px}
+.ch-up{color:var(--green)}
+.ch-dn{color:var(--red)}
+
+/* AI BANNER */
+.ai-banner{background:var(--card);border:1px solid rgba(139,92,246,.25);border-radius:12px;padding:14px 16px;margin-bottom:18px;display:flex;align-items:stretch;gap:14px}
+.ai-icon{width:36px;height:36px;border-radius:9px;background:rgba(139,92,246,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ai-icon i{color:#a78bfa;font-size:18px}
+.ai-insights{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;flex:1}
+.ai-item{background:rgba(255,255,255,.03);border-radius:8px;padding:10px 12px;border:1px solid var(--border)}
+.ai-item-label{font-size:10px;color:var(--text3);margin-bottom:4px;font-family:var(--mono)}
+.ai-item-text{font-size:12px;color:var(--text2);line-height:1.5}
+.ai-tag{font-size:10px;padding:2px 6px;border-radius:4px;margin-top:5px;display:inline-block}
+.tag-warn{background:rgba(245,158,11,.12);color:var(--yellow)}
+.tag-info{background:rgba(59,130,246,.12);color:#60a5fa}
+.tag-ok{background:rgba(16,185,129,.12);color:var(--green)}
+
+/* GRID */
+.grid2{display:grid;grid-template-columns:1fr 340px;gap:14px;margin-bottom:14px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px}
+.ch{padding:13px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.ct{font-size:13px;font-weight:500;color:var(--text)}
+.cb{padding:14px 16px}
+
+/* PRINTERS */
+.printer-row{display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--surface);border-radius:8px;border:1px solid var(--border);margin-bottom:8px}
+.printer-row:last-child{margin-bottom:0}
+.p-icon{width:36px;height:36px;border-radius:8px;background:rgba(59,130,246,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.p-icon i{color:#60a5fa;font-size:18px}
+.p-name{font-size:13px;font-weight:500;color:var(--text)}
+.p-loc{font-size:11px;color:var(--text3);margin-top:1px}
+.ink-mini{display:flex;gap:6px;margin-top:5px}
+.ink-mini-bar{flex:1;height:3px;border-radius:2px;background:rgba(255,255,255,.07);overflow:hidden}
+.ink-mini-fill{height:100%;border-radius:2px}
+.status-badge{font-size:10px;padding:3px 8px;border-radius:20px;display:flex;align-items:center;gap:3px;flex-shrink:0;margin-right:auto}
+.s-online{background:rgba(16,185,129,.1);color:var(--green)}
+.s-error{background:rgba(239,68,68,.1);color:var(--red)}
+.s-warn{background:rgba(245,158,11,.1);color:var(--yellow)}
+.s-dot{width:5px;height:5px;border-radius:50%}
+
+/* ALERTS */
+.alert-item{display:flex;gap:10px;padding:10px 12px;border-radius:8px;border-right:3px solid;margin-bottom:7px}
+.alert-item:last-child{margin-bottom:0}
+.a-err{background:rgba(239,68,68,.06);border-color:var(--red)}
+.a-warn{background:rgba(245,158,11,.06);border-color:var(--yellow)}
+.a-info{background:rgba(59,130,246,.06);border-color:var(--blue)}
+.a-icon{font-size:16px;margin-top:1px;flex-shrink:0}
+.a-err .a-icon{color:var(--red)}
+.a-warn .a-icon{color:var(--yellow)}
+.a-info .a-icon{color:#60a5fa}
+.a-title{font-size:12px;font-weight:500;color:var(--text)}
+.a-desc{font-size:11px;color:var(--text3);margin-top:2px}
+
+/* CHART CARD */
+.chart-card{background:var(--card);border:1px solid var(--border);border-radius:12px}
+.chart-tabs{display:flex;gap:2px;padding:0 16px}
+.ctab{padding:9px 12px;font-size:12px;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s}
+.ctab.active{color:#60a5fa;border-bottom-color:var(--blue)}
+
+/* Nav links */
+.nav-item[href]{text-decoration:none}
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+  <div class="logo">
+    <div class="logo-icon"><i class="ti ti-printer"></i></div>
+    <div>
+      <div class="logo-text">PrintWatch</div>
+      <div class="logo-ver">v1.0 · MVP</div>
+    </div>
+  </div>
+  <div class="nav">
+    <div class="nav-sec">رئيسي</div>
+    <a class="nav-item active" href="01-dashboard.html"><i class="ti ti-layout-dashboard"></i> Dashboard</a>
+    <a class="nav-item" href="01-dashboard.html"><i class="ti ti-printer"></i> الطابعات</a>
+    <a class="nav-item" href="01-dashboard.html"><i class="ti ti-activity"></i> مراقبة مباشرة</a>
+    <div class="nav-sec">إدارة</div>
+    <a class="nav-item" href="01-dashboard.html"><i class="ti ti-bell"></i> التنبيهات <span class="nav-badge">3</span></a>
+    <a class="nav-item" href="02-ink-management.html"><i class="ti ti-droplet"></i> إدارة الحبر</a>
+    <a class="nav-item" href="01-dashboard.html"><i class="ti ti-chart-bar"></i> التقارير</a>
+    <a class="nav-item" href="01-dashboard.html"><i class="ti ti-users"></i> العملاء</a>
+    <a class="nav-item" href="01-dashboard.html"><i class="ti ti-brain"></i> تحليل AI</a>
+    <div class="nav-sec">النظام</div>
+    <a class="nav-item" href="03-whatsapp-alerts.html"><i class="ti ti-brand-whatsapp"></i> تنبيهات واتساب</a>
+    <a class="nav-item" href="01-dashboard.html"><i class="ti ti-credit-card"></i> الاشتراكات</a>
+    <a class="nav-item" href="01-dashboard.html"><i class="ti ti-settings"></i> الإعدادات</a>
+  </div>
+  <div class="plan-box">
+    <div class="plan-name">خطة Pro</div>
+    <div class="plan-info">12 طابعة · تنتهي 30 يونيو</div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div>
+      <div class="page-title">لوحة التحكم <div class="live-dot"></div></div>
+      <div class="page-sub">آخر تحديث: منذ 12 ثانية</div>
+    </div>
+    <div class="topbar-right">
+      <button class="btn"><i class="ti ti-plus"></i> إضافة طابعة</button>
+      <button class="btn btn-blue"><i class="ti ti-download"></i> تصدير</button>
+      <div class="avatar">م.أ</div>
+    </div>
+  </div>
+
+  <div class="metrics">
+    <div class="metric">
+      <div class="metric-top">
+        <span class="metric-label">الطابعات</span>
+        <div class="metric-icon" style="background:rgba(59,130,246,.1)"><i class="ti ti-printer" style="color:var(--blue);font-size:14px"></i></div>
+      </div>
+      <div class="metric-val">12</div>
+      <div class="metric-change ch-up">↑ 2 جديدة هذا الشهر</div>
+    </div>
+    <div class="metric">
+      <div class="metric-top">
+        <span class="metric-label">متصلة الآن</span>
+        <div class="metric-icon" style="background:rgba(16,185,129,.1)"><i class="ti ti-wifi" style="color:var(--green);font-size:14px"></i></div>
+      </div>
+      <div class="metric-val" style="color:var(--green)">9</div>
+      <div class="metric-change"><span style="color:var(--red)">● </span>3 غير متصلة</div>
+    </div>
+    <div class="metric">
+      <div class="metric-top">
+        <span class="metric-label">طباعة اليوم</span>
+        <div class="metric-icon" style="background:rgba(139,92,246,.1)"><i class="ti ti-file" style="color:var(--purple);font-size:14px"></i></div>
+      </div>
+      <div class="metric-val">3,847</div>
+      <div class="metric-change ch-up">↑ 12% عن أمس</div>
+    </div>
+    <div class="metric">
+      <div class="metric-top">
+        <span class="metric-label">أعطال نشطة</span>
+        <div class="metric-icon" style="background:rgba(239,68,68,.1)"><i class="ti ti-alert-triangle" style="color:var(--red);font-size:14px"></i></div>
+      </div>
+      <div class="metric-val" style="color:var(--red)">3</div>
+      <div class="metric-change ch-dn">↑ 1 جديد اليوم</div>
+    </div>
+  </div>
+
+  <div class="ai-banner">
+    <div class="ai-icon"><i class="ti ti-brain"></i></div>
+    <div style="display:flex;align-items:center;gap:8px;margin-left:4px;flex-shrink:0">
+      <span style="font-size:12px;font-weight:500;color:#e2e8f0">تحليل AI</span>
+      <span style="background:rgba(139,92,246,.15);color:#a78bfa;font-size:10px;padding:2px 7px;border-radius:20px">ذكي</span>
+    </div>
+    <div class="ai-insights">
+      <div class="ai-item">
+        <div class="ai-item-label">⚠ تحذير استباقي</div>
+        <div class="ai-item-text">طابعة المكتب B قد تتوقف خلال 48 ساعة</div>
+        <span class="ai-tag tag-warn">خطر مرتفع</span>
+      </div>
+      <div class="ai-item">
+        <div class="ai-item-label">📊 استهلاك غير طبيعي</div>
+        <div class="ai-item-text">طابعة Reception تستهلك حبراً أكثر بـ 34%</div>
+        <span class="ai-tag tag-info">مراقبة</span>
+      </div>
+      <div class="ai-item">
+        <div class="ai-item-label">✅ أداء ممتاز</div>
+        <div class="ai-item-text">7 طابعات تعمل بكفاءة مثالية</div>
+        <span class="ai-tag tag-ok">مستقر</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <div class="ch">
+        <span class="ct">حالة الطابعات</span>
+        <span style="font-size:11px;color:var(--text3)">12 طابعة</span>
+      </div>
+      <div class="cb">
+        <div class="printer-row">
+          <div class="p-icon"><i class="ti ti-printer"></i></div>
+          <div style="flex:1">
+            <div class="p-name">Canon iR-ADV C5535</div>
+            <div class="p-loc"><i class="ti ti-map-pin" style="font-size:10px"></i> الطابق الأول · المكتب A</div>
+            <div class="ink-mini">
+              <div class="ink-mini-bar"><div class="ink-mini-fill" style="width:72%;background:#0ea5e9"></div></div>
+              <div class="ink-mini-bar"><div class="ink-mini-fill" style="width:45%;background:#a78bfa"></div></div>
+              <div class="ink-mini-bar"><div class="ink-mini-fill" style="width:60%;background:#f59e0b"></div></div>
+            </div>
+          </div>
+          <div class="status-badge s-online"><div class="s-dot" style="background:var(--green)"></div>متصلة</div>
+        </div>
+        <div class="printer-row">
+          <div class="p-icon"><i class="ti ti-printer"></i></div>
+          <div style="flex:1">
+            <div class="p-name">HP LaserJet Pro 400</div>
+            <div class="p-loc"><i class="ti ti-map-pin" style="font-size:10px"></i> الاستقبال</div>
+            <div class="ink-mini">
+              <div class="ink-mini-bar"><div class="ink-mini-fill" style="width:18%;background:#f59e0b"></div></div>
+            </div>
+          </div>
+          <div class="status-badge s-warn"><div class="s-dot" style="background:var(--yellow)"></div>تحذير</div>
+        </div>
+        <div class="printer-row">
+          <div class="p-icon" style="background:rgba(239,68,68,.08)"><i class="ti ti-printer" style="color:var(--red)"></i></div>
+          <div style="flex:1">
+            <div class="p-name">Ricoh MP C3504</div>
+            <div class="p-loc"><i class="ti ti-map-pin" style="font-size:10px"></i> الطابق الثاني</div>
+            <div style="font-size:11px;color:var(--red);margin-top:4px"><i class="ti ti-alert-circle" style="font-size:11px"></i> خطأ انحشار ورق E-07</div>
+          </div>
+          <div class="status-badge s-error"><div class="s-dot" style="background:var(--red)"></div>عطل</div>
+        </div>
+        <div class="printer-row">
+          <div class="p-icon"><i class="ti ti-printer"></i></div>
+          <div style="flex:1">
+            <div class="p-name">Epson WorkForce Pro</div>
+            <div class="p-loc"><i class="ti ti-map-pin" style="font-size:10px"></i> قسم المحاسبة</div>
+            <div class="ink-mini">
+              <div class="ink-mini-bar"><div class="ink-mini-fill" style="width:89%;background:#10b981"></div></div>
+              <div class="ink-mini-bar"><div class="ink-mini-fill" style="width:76%;background:#0ea5e9"></div></div>
+            </div>
+          </div>
+          <div class="status-badge s-online"><div class="s-dot" style="background:var(--green)"></div>متصلة</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="ch">
+        <span class="ct">التنبيهات النشطة</span>
+        <span style="background:rgba(239,68,68,.1);color:var(--red);font-size:10px;padding:2px 8px;border-radius:20px">3 جديدة</span>
+      </div>
+      <div class="cb">
+        <div class="alert-item a-err">
+          <i class="ti ti-alert-circle a-icon"></i>
+          <div><div class="a-title">انحشار ورق — Ricoh MP C3504</div><div class="a-desc">خطأ E-07 منذ 14 دقيقة · الطابق الثاني</div></div>
+        </div>
+        <div class="alert-item a-warn">
+          <i class="ti ti-droplet a-icon"></i>
+          <div><div class="a-title">حبر منخفض — HP LaserJet</div><div class="a-desc">18% متبقي · يُقدَّر نفاده خلال 3 أيام</div></div>
+        </div>
+        <div class="alert-item a-warn">
+          <i class="ti ti-wifi-off a-icon"></i>
+          <div><div class="a-title">انقطاع اتصال — Brother MFC</div><div class="a-desc">غير متصلة منذ ساعتين · مكتب C</div></div>
+        </div>
+        <div class="alert-item a-info">
+          <i class="ti ti-info-circle a-icon"></i>
+          <div><div class="a-title">تحديث Agent متاح</div><div class="a-desc">الإصدار 2.1.4 — توصية بالتحديث</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="chart-card">
+    <div class="ch">
+      <span class="ct">إحصائيات الطباعة — آخر 7 أيام</span>
+      <div style="display:flex;gap:6px">
+        <span class="ctab active">أسبوعي</span>
+        <span class="ctab">شهري</span>
+      </div>
+    </div>
+    <div style="padding:16px;height:180px">
+      <canvas id="statsChart"></canvas>
+    </div>
+  </div>
+</div>
+
+<script>
+const ctx = document.getElementById('statsChart');
+new Chart(ctx, {
+  type:'bar',
+  data:{
+    labels:['أحد','اثنين','ثلاثاء','أربعاء','خميس','جمعة','سبت'],
+    datasets:[{
+      label:'صفحات',
+      data:[2400,3100,2800,3900,3200,4100,3847],
+      backgroundColor:'rgba(59,130,246,.45)',
+      borderColor:'#3b82f6',
+      borderWidth:1,
+      borderRadius:4
+    }]
+  },
+  options:{
+    responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false}},
+    scales:{
+      x:{ticks:{color:'#64748b',font:{size:11}},grid:{color:'rgba(255,255,255,.04)'}},
+      y:{ticks:{color:'#64748b',font:{size:11}},grid:{color:'rgba(255,255,255,.04)'}}
+    }
+  }
+});
+document.querySelectorAll('.ctab').forEach(t=>t.addEventListener('click',function(){
+  document.querySelectorAll('.ctab').forEach(x=>x.classList.remove('active'));
+  this.classList.add('active');
+}));
+</script>
+</body>
+</html>
